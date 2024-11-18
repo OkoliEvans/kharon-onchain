@@ -111,7 +111,7 @@ fn test_deposit() {
     dispatcher.initialize();
     dispatcher.whitelist_account(owner);
     dispatcher.deposit(token, 100);
-    let vault_balance = dispatcher.get_user_vault_balance(owner, token);
+    let (_, vault_balance) = dispatcher.get_user_vault_balance(owner, token);
     let owner_balance = dispatcher.get_user_balance(owner);
     let total_deposit = dispatcher.get_total_deposits();
     assert(vault_balance == 100 && owner_balance == 100, 'inaccurate balance');

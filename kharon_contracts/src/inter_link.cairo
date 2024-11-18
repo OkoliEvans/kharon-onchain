@@ -186,7 +186,7 @@ pub mod InterLink {
         ) {
             let caller = get_caller_address();
             let user_vault = self.user_vault.entry(caller).read();
-            let balance = self.get_user_vault_balance(caller, token);
+            let (_, balance) = self.get_user_vault_balance(caller, token);
             let is_whitelisted = self.check_is_whitelisted(caller);
             let is_vault_paused: bool = self.check_vault_is_paused();
             let user_vault_balance = self.user_vault_balance.entry(caller).entry(user_vault);
@@ -288,7 +288,7 @@ pub mod InterLink {
 
         fn get_user_vault_balance(
             self: @ContractState, user: ContractAddress, token: ContractAddress
-        ) -> u256 {
+        ) -> (ContractAddress, u256) {
             let user_vault = self.user_vault.entry(user).read();
             IMainVaultTraitDispatcher { contract_address: user_vault }
                 .get_vault_balance(user_vault, token)
