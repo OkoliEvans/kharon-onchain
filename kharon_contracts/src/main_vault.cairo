@@ -38,10 +38,10 @@ pub mod Vault {
     impl IMainVaultImpl of IMainVaultTrait<ContractState> {
         fn get_vault_balance(
             self: @ContractState, vault: ContractAddress, token: ContractAddress
-        ) -> u256 {
+        ) -> (ContractAddress, u256) {
             self.ownable.assert_only_owner();
             let vault_balance = IERC20Dispatcher { contract_address: token }.balance_of(vault);
-            vault_balance
+            (token, vault_balance)
         }
 
         fn withdraw(

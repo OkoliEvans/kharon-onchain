@@ -30,7 +30,7 @@ pub trait InterlinkTrait<TContractState> {
     fn get_owner(self: @TContractState) -> ContractAddress;
     fn get_user_vault_balance(
         self: @TContractState, user: ContractAddress, token: ContractAddress
-    ) -> u256;
+    ) -> (ContractAddress, u256);
     fn check_account_is_whitelisted(self: @TContractState, account: ContractAddress) -> bool;
     fn update_vault_classhash(ref self: TContractState, new_classhash: starknet::ClassHash);
 }
@@ -39,7 +39,7 @@ pub trait InterlinkTrait<TContractState> {
 pub trait IMainVaultTrait<TContractState> {
     fn get_vault_balance(
         self: @TContractState, vault: ContractAddress, token: ContractAddress
-    ) -> u256;
+    ) -> (ContractAddress, u256);
     fn withdraw(
         ref self: TContractState, token: ContractAddress, receiver: ContractAddress, amount: u256
     );

@@ -110,8 +110,8 @@ fn test_deposit() {
     start_cheat_caller_address(contract_addr, owner);
     dispatcher.initialize();
     dispatcher.whitelist_account(owner);
-    dispatcher.deposit(token, 100);
-    let vault_balance = dispatcher.get_user_vault_balance(owner, token);
+    dispatcher.deposit(token, 100.into());
+    let (_, vault_balance) = dispatcher.get_user_vault_balance(owner, token);
     let owner_balance = dispatcher.get_user_balance(owner);
     let total_deposit = dispatcher.get_total_deposits();
     assert(vault_balance == 100 && owner_balance == 100, 'inaccurate balance');
@@ -145,7 +145,7 @@ fn test_withdraw() {
     dispatcher.whitelist_account(owner);
     dispatcher.deposit(token, 100);
     dispatcher.withdraw(token, owner, 20);
-    assert(dispatcher.get_user_vault_balance(owner, token) == 80, 'incorrect vault balance');
+    assert(dispatcher.get_user_vault_balance(owner, token) == (token, 80), 'incorrect vault balance');
     assert(dispatcher.get_user_balance(owner) == 80, 'inaccurate user balance');
     stop_cheat_caller_address(contract_addr);
 }
@@ -176,7 +176,7 @@ fn test_transfer() {
     dispatcher.whitelist_account(owner);
     dispatcher.deposit(token, 400);
     dispatcher.transfer(token, owner2, 200);
-    assert(dispatcher.get_user_vault_balance(owner, token) == 200, 'incorrect vault balance');
+    assert(dispatcher.get_user_vault_balance(owner, token) == (token, 200), 'incorrect vault balance');
     assert(token_dispatcher.balance_of(owner2) == 200, 'inaccurate user balance');
     stop_cheat_caller_address(contract_addr);
 }
