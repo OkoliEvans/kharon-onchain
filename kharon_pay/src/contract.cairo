@@ -86,6 +86,7 @@ pub mod KharonPay {
         fn receive_payment(
             ref self: ContractState, token: ContractAddress, amount: u256, reference: ByteArray,
         ) {
+            assert!(reference.len() > 0, "Reference cannot be empty");
             assert!(token.is_non_zero(), "Token address cannot be zero");
             assert!(amount > 0, "Amount must be greater than zero");
             assert!(self.is_supported_token(token), "Token is not supported");
