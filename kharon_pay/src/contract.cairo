@@ -132,7 +132,7 @@ pub mod KharonPay {
             self.emit(TokenRemoved { token });
         }
 
-        fn is_supported_token(ref self: ContractState, token: ContractAddress) -> bool {
+        fn is_supported_token(self: @ContractState, token: ContractAddress) -> bool {
             self.is_token_supported.entry(token).read()
         }
 
