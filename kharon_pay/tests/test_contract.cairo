@@ -1,12 +1,16 @@
-use starknet::{ContractAddress, contract_address_const};
-
-use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, start_cheat_caller_address, stop_cheat_caller_address};
-use kharon_pay::{ contract::KharonPay, mock_erc20::ERC20, interfaces::{IKharonPayDispatcher, IKharonPayDispatcherTrait} };
+use kharon_pay::contract::KharonPay;
+use kharon_pay::interfaces::{IKharonPayDispatcher, IKharonPayDispatcherTrait};
+use kharon_pay::mock_erc20::ERC20;
 use openzeppelin::token::erc20::{ERC20ABIDispatcher, ERC20ABIDispatcherTrait};
+use snforge_std::{
+    ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
+    stop_cheat_caller_address,
+};
+use starknet::{ContractAddress, contract_address_const};
 
 fn deploy_contract() -> ContractAddress {
     let contract = declare("KharonPay").unwrap().contract_class();
-    
+
     let mut calldata = ArrayTrait::new();
     let owner: ContractAddress = contract_address_const::<'owner'>();
 
@@ -72,7 +76,7 @@ fn test_receive_payment() {
     stop_cheat_caller_address(token_address);
 
     start_cheat_caller_address(contract_address, recipient);
-    dispatcher.receive_payment(token_address, 1000, "test");
+    dispatcher.receive_payment(token_address, 1000, "test", "user");
     stop_cheat_caller_address(contract_address);
 
     let balance = erc20_dispatcher.balance_of(contract_address);
@@ -101,7 +105,36 @@ fn test_receive_payment_should_panic_no_reference() {
     stop_cheat_caller_address(token_address);
 
     start_cheat_caller_address(contract_address, recipient);
-    dispatcher.receive_payment(token_address, 1000, "");
+    dispatcher.receive_payment(token_address, 1000, "", "user");
+    stop_cheat_caller_address(contract_address);
+
+    let balance = erc20_dispatcher.balance_of(contract_address);
+    assert_eq!(balance, 1000, "Balance should be 1000");
+}
+
+
+#[test]
+#[should_panic(expected: "User cannot be empty")]
+fn test_receive_payment_should_panic_no_user() {
+    let owner: ContractAddress = contract_address_const::<'owner'>();
+    let recipient: ContractAddress = contract_address_const::<'recipient'>();
+
+    let contract_address = deploy_contract();
+    let token_address = deploy_token(recipient);
+
+    let dispatcher = IKharonPayDispatcher { contract_address };
+    let erc20_dispatcher = ERC20ABIDispatcher { contract_address: token_address };
+
+    start_cheat_caller_address(contract_address, owner);
+    dispatcher.add_supported_token(token_address);
+    stop_cheat_caller_address(contract_address);
+
+    start_cheat_caller_address(token_address, recipient);
+    erc20_dispatcher.approve(contract_address, 1000);
+    stop_cheat_caller_address(token_address);
+
+    start_cheat_caller_address(contract_address, recipient);
+    dispatcher.receive_payment(token_address, 1000, "test", "");
     stop_cheat_caller_address(contract_address);
 
     let balance = erc20_dispatcher.balance_of(contract_address);
@@ -170,7 +203,7 @@ fn test_receive_payment_should_panic_system_paused() {
     stop_cheat_caller_address(contract_address);
 
     start_cheat_caller_address(contract_address, recipient);
-    dispatcher.receive_payment(token_address, 1000, "test");
+    dispatcher.receive_payment(token_address, 1000, "test", "user");
     stop_cheat_caller_address(contract_address);
 
     let balance = erc20_dispatcher.balance_of(contract_address);
@@ -218,7 +251,7 @@ fn test_withdraw() {
     stop_cheat_caller_address(token_address);
 
     start_cheat_caller_address(contract_address, recipient);
-    dispatcher.receive_payment(token_address, 1000, "test");
+    dispatcher.receive_payment(token_address, 1000, "test", "user");
     stop_cheat_caller_address(contract_address);
 
     start_cheat_caller_address(contract_address, owner);
@@ -250,7 +283,7 @@ fn test_withdraw_should_panic_unauthorized_caller() {
     stop_cheat_caller_address(token_address);
 
     start_cheat_caller_address(contract_address, recipient);
-    dispatcher.receive_payment(token_address, 1000, "test");
+    dispatcher.receive_payment(token_address, 1000, "test", "user");
     stop_cheat_caller_address(contract_address);
 
     dispatcher.withdraw(token_address, recipient, 500);
@@ -280,7 +313,7 @@ fn test_withdraw_should_panic_system_paused() {
     stop_cheat_caller_address(token_address);
 
     start_cheat_caller_address(contract_address, recipient);
-    dispatcher.receive_payment(token_address, 1000, "test");
+    dispatcher.receive_payment(token_address, 1000, "test", "user");
     stop_cheat_caller_address(contract_address);
 
     start_cheat_caller_address(contract_address, owner);
